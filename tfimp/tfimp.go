@@ -43,13 +43,12 @@ func TfImporter(workingDir string, noDryRun bool) (*TfImport, error) {
 		return nil, err
 	}
 
-	// get all resources
+	// get tf state
 	state, err := tf.Show(context.TODO())
 	if err != nil {
 		return nil, fmt.Errorf("error showing state: %v", err)
 	}
 
-	// get all resources from state (root and submodules)
 	return &TfImport{
 		tfExec:   tf,
 		state:    state,

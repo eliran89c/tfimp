@@ -19,10 +19,10 @@ var (
 )
 
 func init() {
-	fromResourceCmd.Flags().StringVarP(&resourceType, "source-resource-type", "t", "", "The source resource type (e.g. aws_s3_bucket).")
-	fromResourceCmd.Flags().StringVarP(&resourceAttr, "source-resource-attr", "a", "", "The source resource attribute (e.g. bucket).")
-	fromResourceCmd.MarkFlagRequired("source-resource-type")
-	fromResourceCmd.MarkFlagRequired("source-resource-attr")
+	fromResourceCmd.Flags().StringVarP(&resourceType, "resource-type", "t", "", "The source resource type (e.g. `aws_s3_bucket`).")
+	fromResourceCmd.Flags().StringVarP(&resourceAttr, "resource-attr", "a", "", "The source resource attribute (e.g. `bucket`).")
+	fromResourceCmd.MarkFlagRequired("resource-type")
+	fromResourceCmd.MarkFlagRequired("resource-attr")
 }
 
 func fromResource(cmd *cobra.Command, args []string) error {
