@@ -6,9 +6,7 @@ import (
 
 var (
 	workingDir string
-	dryRun     bool
-	backup     bool
-	backupDir  string
+	noDryRun   bool
 
 	tfimpCmd = &cobra.Command{
 		Use:           "tfimp",
@@ -26,8 +24,6 @@ func Execute() error {
 
 func init() {
 	tfimpCmd.AddCommand(fromResourceCmd)
-	tfimpCmd.PersistentFlags().StringVarP(&workingDir, "working-dir", "d", "./", "The working directory (default to current folder).")
-	tfimpCmd.PersistentFlags().BoolVar(&dryRun, "dry-run", false, "Run in dry-run mode.")
-	tfimpCmd.PersistentFlags().BoolVar(&backup, "backup", false, "Whether to backup the state file before running the import commands.")
-	tfimpCmd.PersistentFlags().StringVar(&backupDir, "backup-dir", ".", "Where to store the state backup file.")
+	tfimpCmd.PersistentFlags().StringVarP(&workingDir, "working-dir", "d", "./", "The working directory.")
+	tfimpCmd.PersistentFlags().BoolVar(&noDryRun, "no-dry-run", false, "Disable dry-run mode.")
 }

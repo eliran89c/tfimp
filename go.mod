@@ -11,7 +11,6 @@ require (
 )
 
 require (
-	github.com/google/uuid v1.3.0
 	github.com/hashicorp/terraform-json v0.14.0
 	github.com/spf13/cobra v1.6.1
 	github.com/zclconf/go-cty v1.11.0 // indirect

@@ -30,23 +30,13 @@ func fromResource(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("Please enter at least 1 resource type to import")
 	}
 
-	tfImport, err := tfimp.TfImporter(workingDir, dryRun)
+	tfImport, err := tfimp.TfImporter(workingDir, noDryRun)
 	if err != nil {
 		return err
 	}
 
-	// check if need to backup state
-	if backup {
-		if err = tfImport.BackupState(backupDir); err != nil {
-			return err
-		}
-	}
-
-	// going over all resources that match --source-resource-type
-	for _, r := range tfImport.Resources {
-		if r.Type != resourceType {
-			continue
-		}
+	//going over all resources that match --source-resource-type
+	for _, r := range tfImport.GetResources(resourceType) {
 
 		attrVal, ok := r.AttributeValues[resourceAttr]
 		if !ok {
@@ -55,12 +45,12 @@ func fromResource(cmd *cobra.Command, args []string) error {
 		}
 
 		// match found
-		for _, newResource := range args {
-			newResourceName, err := tfimp.SetFromResourceImportName(newResource, r)
+		for _, arg := range args {
+			importAddr, err := tfimp.SetFromResourceImportAddr(arg, r)
 			if err != nil {
 				return err
 			}
-			if err = tfImport.Import(newResourceName, attrVal.(string)); err != nil {
+			if err = tfImport.Import(importAddr, attrVal.(string)); err != nil {
 				return err
 			}
 		}
