@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/eliran89c/tfimp/tfimp"
 	"github.com/spf13/cobra"
@@ -57,7 +56,10 @@ func fromResource(cmd *cobra.Command, args []string) error {
 
 		// match found
 		for _, newResource := range args {
-			newResourceName := strings.Replace(r.Address, resourceType, newResource, 1)
+			newResourceName, err := tfimp.SetFromResourceImportName(newResource, r)
+			if err != nil {
+				return err
+			}
 			if err = tfImport.Import(newResourceName, attrVal.(string)); err != nil {
 				return err
 			}
