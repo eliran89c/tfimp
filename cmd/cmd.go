@@ -23,7 +23,7 @@ func Execute() error {
 }
 
 func init() {
-	tfimpCmd.AddCommand(fromResourceCmd)
+	tfimpCmd.AddCommand(fromConfigFileCmd)
 	tfimpCmd.PersistentFlags().StringVarP(&workingDir, "working-dir", "d", "./", "The working directory.")
 	tfimpCmd.PersistentFlags().BoolVar(&noDryRun, "no-dry-run", false, "Disable dry-run mode.")
 }

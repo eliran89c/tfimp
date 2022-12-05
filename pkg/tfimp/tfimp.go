@@ -92,7 +92,11 @@ func (t *TfImport) Import(name string, value string) error {
 	return nil
 }
 
-func SetFromResourceImportAddr(newResource string, sourceResource *tfjson.StateResource) (string, error) {
+func SetImportAddrFromResource(newResource string, sourceResource *tfjson.StateResource) (string, error) {
+	if newResource == "" {
+		return "", fmt.Errorf("Import name: %s not supported", newResource)
+	}
+
 	re := regexp.MustCompile("\\[[\\w|\"|\\s]+\\]")
 	index := strings.Join(re.FindStringSubmatch(newResource), "")
 	newResWithoutIndex := re.ReplaceAllString(newResource, "")
