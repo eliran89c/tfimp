@@ -25,8 +25,9 @@ type step struct {
 }
 
 type forEachBlock struct {
-	Resource  string `json:"resource"`
-	Attribute string `json:"attribute"`
+	Resource  string   `json:"resource"`
+	Attribute string   `json:"attribute"`
+	Values    []string `json:"values,omitempty"`
 }
 
 type condition struct {
@@ -76,6 +77,20 @@ func (c *condition) Check(r *tfjson.StateResource) bool {
 
 func (fe *forEachBlock) IsEmpty() bool {
 	return (fe.Attribute == "" || fe.Resource == "")
+}
+
+func (fe *forEachBlock) Contains(resName string) bool {
+	if len(fe.Values) == 0 {
+		// no restriction, continue
+		return true
+	}
+
+	for _, v := range fe.Values {
+		if v == resName {
+			return true
+		}
+	}
+	return false
 }
 
 func NewConfigFromFile(path string) (*Config, error) {

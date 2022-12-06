@@ -41,6 +41,12 @@ func fromConfigFile(cmd *cobra.Command, _ []string) error {
 		}
 
 		for _, r := range tfImport.GetResources(step.ForEach.Resource) {
+
+			// verify resource attribute against specific value if specified
+			if !step.ForEach.Contains(r.Name) {
+				continue
+			}
+
 			attrVal, ok := r.AttributeValues[step.ForEach.Attribute]
 			if !ok {
 				fmt.Printf("[WARN] Missing attribute `%v` for resource %v\n", step.ForEach.Attribute, r.Address)
