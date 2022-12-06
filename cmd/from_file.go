@@ -24,15 +24,17 @@ func init() {
 }
 
 func fromConfigFile(cmd *cobra.Command, _ []string) error {
+	cfg, err := config.NewConfigFromFile(configPath)
+	if err != nil {
+		return err
+	}
+
 	tfImport, err := tfimp.TfImporter(workingDir, noDryRun)
 	if err != nil {
 		return err
 	}
-	config, err := config.NewConfigFromFile(configPath)
-	if err != nil {
-		return err
-	}
-	for _, step := range config.Steps {
+
+	for _, step := range cfg.Steps {
 		if step.ForEach.IsEmpty() {
 			fmt.Printf("[WARN] for_each block is missing for %v import\n", step.ImportName)
 			continue
@@ -46,7 +48,7 @@ func fromConfigFile(cmd *cobra.Command, _ []string) error {
 			}
 
 			//match found
-			importAddr, err := tfimp.SetImportAddrFromResource(step.ImportName, r)
+			importAddr, err := config.SetImportAddrFromResource(step.ImportName, r)
 			if err != nil {
 				return err
 			}
@@ -57,7 +59,13 @@ func fromConfigFile(cmd *cobra.Command, _ []string) error {
 				continue
 			}
 
-			if err = tfImport.Import(importAddr, attrVal.(string)); err != nil {
+			// transform value
+			importValue, err := step.ValueTransform.Transform(attrVal.(string))
+			if err != nil {
+				return err
+			}
+
+			if err = tfImport.Import(importAddr, importValue); err != nil {
 				return err
 			}
 		}

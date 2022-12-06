@@ -4,8 +4,6 @@ import (
 	"context"
 	"fmt"
 	"os/exec"
-	"regexp"
-	"strings"
 
 	"github.com/hashicorp/terraform-exec/tfexec"
 	tfjson "github.com/hashicorp/terraform-json"
@@ -90,36 +88,4 @@ func (t *TfImport) Import(name string, value string) error {
 		}
 	}
 	return nil
-}
-
-func SetImportAddrFromResource(newResource string, sourceResource *tfjson.StateResource) (string, error) {
-	if newResource == "" {
-		return "", fmt.Errorf("Import name: %s not supported", newResource)
-	}
-
-	re := regexp.MustCompile("\\[[\\w|\"|\\s]+\\]")
-	index := strings.Join(re.FindStringSubmatch(newResource), "")
-	newResWithoutIndex := re.ReplaceAllString(newResource, "")
-	srcResWithoutIndex := re.ReplaceAllString(sourceResource.Address, "")
-
-	// check number of elements in import resource
-	switch e := strings.Split(newResWithoutIndex, "."); {
-	case len(e) == 1:
-		{
-			// user provided resource type only, return source resource with new type
-			addr := strings.Replace(srcResWithoutIndex, sourceResource.Type, e[0], 1)
-			return fmt.Sprintf("%v%v", addr, index), nil
-		}
-	case len(e) == 2:
-		{
-			// user provided resource type and name
-			addr := strings.Replace(srcResWithoutIndex, sourceResource.Type, e[0], 1)
-			addr = strings.Replace(addr, sourceResource.Name, e[1], 1)
-			return fmt.Sprintf("%v%v", addr, index), nil
-		}
-	default:
-		{
-			return "", fmt.Errorf("Found more than 2 elements for import: %v", newResource)
-		}
-	}
 }

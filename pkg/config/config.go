@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"regexp"
 	"strings"
 
 	"github.com/buger/jsonparser"
@@ -17,9 +18,10 @@ type Config struct {
 }
 
 type step struct {
-	ImportName string       `json:"import_name"`
-	ForEach    forEachBlock `json:"for_each,omitempty"`
-	Condition  condition    `json:"condition,omitempty"`
+	ImportName     string         `json:"import_name"`
+	ForEach        forEachBlock   `json:"for_each,omitempty"`
+	Condition      condition      `json:"condition,omitempty"`
+	ValueTransform ValueTransform `json:"transform,omitempty"`
 }
 
 type forEachBlock struct {
@@ -87,4 +89,36 @@ func NewConfigFromFile(path string) (*Config, error) {
 	byteJson, _ := ioutil.ReadAll(f)
 	json.Unmarshal(byteJson, &config)
 	return &config, nil
+}
+
+func SetImportAddrFromResource(newResource string, sourceResource *tfjson.StateResource) (string, error) {
+	if newResource == "" {
+		return "", fmt.Errorf("Import name: %s not supported", newResource)
+	}
+
+	re := regexp.MustCompile("\\[[\\w|\"|\\s]+\\]")
+	index := strings.Join(re.FindStringSubmatch(newResource), "")
+	newResWithoutIndex := re.ReplaceAllString(newResource, "")
+	srcResWithoutIndex := re.ReplaceAllString(sourceResource.Address, "")
+
+	// check number of elements in import resource
+	switch e := strings.Split(newResWithoutIndex, "."); {
+	case len(e) == 1:
+		{
+			// user provided resource type only, return source resource with new type
+			addr := strings.Replace(srcResWithoutIndex, sourceResource.Type, e[0], 1)
+			return fmt.Sprintf("%v%v", addr, index), nil
+		}
+	case len(e) == 2:
+		{
+			// user provided resource type and name
+			addr := strings.Replace(srcResWithoutIndex, sourceResource.Type, e[0], 1)
+			addr = strings.Replace(addr, sourceResource.Name, e[1], 1)
+			return fmt.Sprintf("%v%v", addr, index), nil
+		}
+	default:
+		{
+			return "", fmt.Errorf("Found more than 2 elements for import: %v", newResource)
+		}
+	}
 }
