@@ -61,7 +61,7 @@ func fromConfigFile(cmd *cobra.Command, _ []string) error {
 
 			// check conditions
 			if pass := step.Condition.Check(r); !pass {
-				fmt.Printf("skipping resource: `%v` due to condition check\n", r.Address)
+				fmt.Printf("skipping import: `%v` due to condition check\n", step.ImportName)
 				continue
 			}
 
