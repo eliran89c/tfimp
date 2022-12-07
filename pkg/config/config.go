@@ -111,29 +111,26 @@ func SetImportAddrFromResource(newResource string, sourceResource *tfjson.StateR
 		return "", fmt.Errorf("Import name: %s not supported", newResource)
 	}
 
+	// strip resources indexes
 	re := regexp.MustCompile("\\[[\\w|\"|\\s]+\\]")
 	index := strings.Join(re.FindStringSubmatch(newResource), "")
 	newResWithoutIndex := re.ReplaceAllString(newResource, "")
 	srcResWithoutIndex := re.ReplaceAllString(sourceResource.Address, "")
 
 	// check number of elements in import resource
-	switch e := strings.Split(newResWithoutIndex, "."); {
-	case len(e) == 1:
-		{
-			// user provided resource type only, return source resource with new type
-			addr := strings.Replace(srcResWithoutIndex, sourceResource.Type, e[0], 1)
-			return fmt.Sprintf("%v%v", addr, index), nil
-		}
-	case len(e) == 2:
-		{
-			// user provided resource type and name
-			addr := strings.Replace(srcResWithoutIndex, sourceResource.Type, e[0], 1)
-			addr = strings.Replace(addr, sourceResource.Name, e[1], 1)
-			return fmt.Sprintf("%v%v", addr, index), nil
-		}
-	default:
-		{
-			return "", fmt.Errorf("Found more than 2 elements for import: %v", newResource)
-		}
+	newElements := strings.Split(newResWithoutIndex, ".")
+	if len(newElements) <= 1 {
+		return "", fmt.Errorf("Found less than 2 elements for import: %v. please enter at least resource type and name (e.g. aws_s3_bucket.my_bucket)", newResource)
 	}
+
+	// remove the last 2 elements from source resource
+	srcElements := strings.Split(srcResWithoutIndex, ".")
+	srcElements = srcElements[:len(srcElements)-2]
+
+	// combine the elements (src first, new later)
+	elements := append(srcElements, newElements...)
+	addr := strings.Join(elements, ".")
+
+	// user provided resource type and name
+	return fmt.Sprintf("%v%v", addr, index), nil
 }
