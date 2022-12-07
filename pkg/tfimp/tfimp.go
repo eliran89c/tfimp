@@ -83,6 +83,7 @@ func (t *TfImport) Import(name string, value string) error {
 	if !t.noDryRun {
 		fmt.Printf("[DryRun] Executing: terraform import '%v' '%v'\n", name, value)
 	} else {
+		fmt.Printf("IMPORTING: '%v' for '%v'...\n", name, value)
 		if err := t.tfExec.Import(context.TODO(), name, value); err != nil {
 			return err
 		}
